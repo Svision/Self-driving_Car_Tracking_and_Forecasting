@@ -27,19 +27,15 @@ def iou_2d(bboxes1: np.ndarray, bboxes2: np.ndarray) -> np.ndarray:
     """
     M, N = bboxes1.shape[0], bboxes2.shape[0]
     # DONE: Replace this stub code.
-    iou_mat = -np.ones((M, N))
+    iou_mat = np.zeros((M, N))
     for i in range(M):
         polygon1 = create_polygon(bboxes1[i])
         for j in range(N):
-            if iou_mat[i, j] != -1.0:  # ignore duplicate calculation
-                continue
             polygon2 = create_polygon(bboxes2[j])
             area_of_overlap = polygon1.intersection(polygon2).area
             area_of_union = polygon1.union(polygon2).area
             iou = area_of_overlap / area_of_union
             iou_mat[i, j] = iou
-            if j < M:
-                iou_mat[j, i] = iou  # reduce workload, since (i, j) and (j, i) should have same value
     return iou_mat
 
 
