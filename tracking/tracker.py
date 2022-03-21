@@ -75,8 +75,10 @@ class Tracker:
         """
         # TODO: Replace this stub code by invoking self.cost_matrix and greedy_matching
         M, N = bboxes1.shape[0], bboxes2.shape[0]
-        cost_matrix = torch.ones((M, N))
+        cost_matrix = self.cost_matrix(bboxes1, bboxes2)
         assign_matrix = torch.zeros((M, N))
+        row_ids, col_ids = greedy_matching(cost_matrix.numpy())
+        assign_matrix[row_ids, col_ids] = 1
 
         return assign_matrix, cost_matrix
 
@@ -95,8 +97,10 @@ class Tracker:
         """
         # TODO: Replace this stub code by invoking self.cost_matrix and hungarian_matching
         M, N = bboxes1.shape[0], bboxes2.shape[0]
-        cost_matrix = torch.ones((M, N))
+        cost_matrix = self.cost_matrix(bboxes1, bboxes2)
         assign_matrix = torch.zeros((M, N))
+        row_ids, col_ids = hungarian_matching(cost_matrix.numpy())
+        assign_matrix[row_ids, col_ids] = 1
 
         return assign_matrix, cost_matrix
 
