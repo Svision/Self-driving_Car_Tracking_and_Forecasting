@@ -21,19 +21,29 @@ class PredictionModelConfig:
     )
     num_history_timesteps: int = 10  # Number of timesteps in the history
     num_label_timesteps: int = 10  # Number of timesteps to predict
+    num_features_per_timestep: int = 2  # Number of features input to the encoder
 
 
 class PredictionModel(nn.Module):
-    """A basic object Prediction model."""
+    """A basic object Prediction model.
+       input X: preprocessed input trajectory [T * 3]
+    """
 
     def __init__(self, config: PredictionModelConfig) -> None:
         super().__init__()
 
         # TODO: Implement
-        # self._encoder = FILL IN
+        self._encoder = nn.Sequential(
+            nn.Linear(config.num_history_timesteps * 3, 64),
+            nn.ReLU(),
+            nn.Linear(64, 128),
+            nn.ReLU(),
+        )
 
         # TODO: Implement
-        # self._decoder = FILL IN
+        self._decoder = nn.Sequential(
+            nn.Linear(128, config.num_label_timesteps * 2),
+        )
 
     @staticmethod
     def _preprocess(x_batches: List[Tensor]) -> Tuple[Tensor, Tensor, Tensor]:
