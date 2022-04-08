@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from shapely.geometry import Polygon
 
@@ -37,6 +38,52 @@ def iou_2d(bboxes1: np.ndarray, bboxes2: np.ndarray) -> np.ndarray:
             iou = area_of_overlap / area_of_union
             iou_mat[i, j] = iou
     return iou_mat
+
+
+def geometry_distance(bboxes1: np.ndarray, bboxes2: np.ndarray) -> np.ndarray:
+    """Computes geometry distance of two sets of bounding boxes
+
+    Args:
+        bboxes1: bounding box set of shape [M, 5], each row corresponding to x, y, l, w, yaw of the bounding box
+        bboxes2: bounding box set of shape [N, 5], each row corresponding to x, y, l, w, yaw of the bounding box
+    Returns:
+        gd_mat: matrix of shape [M, N], where gd_mat[i, j] is the geometry distance between bboxes[i] and bboxes[j].
+    """
+    M, N = bboxes1.shape[0], bboxes2.shape[0]
+    gd_mat = np.zeros((M, N))
+    for i in range(M):
+        # box_size1 = bboxes1[i][2] * bboxes1[i][3]
+        centroid1 = (bboxes1[i][0], bboxes1[i][1])
+        # heading_angle1 = bboxes1[i][4]
+        for j in range(N):
+            # box_size2 = bboxes1[j][2] * bboxes1[j][3]
+            centroid2 = (bboxes1[j][0], bboxes1[j][1])
+            # heading_angle2 = bboxes1[j][4]
+
+            # box_size_diff = abs(box_size1 - box_size2)
+            centroid_dist = math.dist(centroid1, centroid2)
+            # angle_dist = abs(heading_angle1 - heading_angle2)
+
+            gd_mat[i, j] = centroid_dist
+    return gd_mat / np.amax(gd_mat)
+
+
+def motion_feature(bboxes1: np.ndarray, bboxes2: np.ndarray) -> np.ndarray:
+    """Computes motion feature of two sets of bounding boxes
+
+    Args:
+        bboxes1: bounding box set of shape [M, 5], each row corresponding to x, y, l, w, yaw of the bounding box
+        bboxes2: bounding box set of shape [N, 5], each row corresponding to x, y, l, w, yaw of the bounding box
+    Returns:
+        mf_mat: matrix of shape [M, N], where mf_mat[i, j] is the velocity difference between bboxes[i] and bboxes[j].
+    """
+    M, N = bboxes1.shape[0], bboxes2.shape[0]
+    mf_mat = np.zeros((M, N))
+    for i in range(M):
+        for j in range(N):
+            # mf_mat[i, j] = FILL IN
+            pass
+    return mf_mat / np.amax(mf_mat)
 
 
 # if __name__ == '__main__':
