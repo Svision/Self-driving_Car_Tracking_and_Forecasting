@@ -50,22 +50,24 @@ def geometry_distance(bboxes1: np.ndarray, bboxes2: np.ndarray) -> np.ndarray:
         gd_mat: matrix of shape [M, N], where gd_mat[i, j] is the geometry distance between bboxes[i] and bboxes[j].
     """
     M, N = bboxes1.shape[0], bboxes2.shape[0]
+    iou_mat = iou_2d(bboxes1, bboxes2)
     gd_mat = np.zeros((M, N))
     for i in range(M):
-        # box_size1 = bboxes1[i][2] * bboxes1[i][3]
+        box_size1 = bboxes1[i][2] * bboxes1[i][3]
         centroid1 = (bboxes1[i][0], bboxes1[i][1])
-        # heading_angle1 = bboxes1[i][4]
+        heading_angle1 = bboxes1[i][4]
         for j in range(N):
-            # box_size2 = bboxes1[j][2] * bboxes1[j][3]
-            centroid2 = (bboxes1[j][0], bboxes1[j][1])
-            # heading_angle2 = bboxes1[j][4]
+            box_size2 = bboxes2[j][2] * bboxes2[j][3]
+            centroid2 = (bboxes2[j][0], bboxes2[j][1])
+            heading_angle2 = bboxes2[j][4]
 
-            # box_size_diff = abs(box_size1 - box_size2)
+            box_size_diff = abs(box_size1 - box_size2)
             centroid_dist = math.dist(centroid1, centroid2)
-            # angle_dist = abs(heading_angle1 - heading_angle2)
+            angle_dist = abs(heading_angle1 - heading_angle2)
 
-            gd_mat[i, j] = centroid_dist
-    return gd_mat / np.amax(gd_mat)
+            # print(box_size_diff, centroid_dist, angle_dist)
+            gd_mat[i, j] += 0.5 * box_size_diff + 0.07 * centroid_dist + 2 * angle_dist
+    return (gd_mat / np.amax(gd_mat) + iou_mat / np.amax(iou_mat)) / 2
 
 
 def motion_feature(bboxes1: np.ndarray, bboxes2: np.ndarray) -> np.ndarray:
