@@ -33,7 +33,6 @@ def compute_l1_loss(targets: Tensor, predictions: Tensor) -> Tensor:
     return torch.mean(l1_loss)
 
 
-
 @dataclass
 class PredictionLossConfig:
     """Prediction loss function configuration.
