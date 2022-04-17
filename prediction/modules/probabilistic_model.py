@@ -12,10 +12,10 @@ from prediction.utils.transform import transform_using_actor_frame
 class ProbabilisticDecoder(nn.Module):
     ## write the code for the new model here
 
-    def __init__(self) -> None:
+    def __init__(self, config) -> None:
         super().__init__()
         self._net = nn.Sequential(
-            nn.Linear(128, 5),
+            nn.Linear(128, config.num_label_timesteps * 5),
         )
 
     def forward(self, x):
@@ -25,7 +25,7 @@ class ProbabilisticDecoder(nn.Module):
 class ProbabilisticModel(PredictionModel):
     def __init__(self, config: PredictionModelConfig) -> None:
         super().__init__(config)
-        self._decoder = ProbabilisticDecoder()
+        self._decoder = ProbabilisticDecoder(config)
 
     @staticmethod
     def _postprocess(

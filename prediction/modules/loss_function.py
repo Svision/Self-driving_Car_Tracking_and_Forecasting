@@ -48,21 +48,20 @@ def compute_nll_loss(targets: Tensor, predictions: Tensor) -> Tensor:
     Returns:
         A scalar NLL loss between `predictions` and `targets`
     """
-    print(targets.shape)
-    print(targets.isnan().shape)
-    print(torch.any(targets.isnan(), dim=).shape)
-    targets = targets[~torch.any(targets.isnan(), dim=1)]
-    predictions = predictions[~torch.any(targets.isnan(), dim=1)]
+    BN, T, _ = targets.shape
+    filtered_targets = targets[~torch.any(targets.isnan(), dim=2)]
+    filtered_predictions = predictions[~torch.any(targets.isnan(), dim=2)]
+    print(filtered_predictions.shape)
     # generate cov matrix
-    sd_x = predictions[:, :, 3:4]
-    sd_y = predictions[:, :, 4:5]
-    rho = predictions[:, :, 2:3] / torch.max(predictions[:, :, 2:3])  # clamped between [-1, 1]
+    sd_x = filtered_predictions[..., 3:4]
+    sd_y = filtered_predictions[..., 4:5]
+    rho = filtered_predictions[..., 2:3] / torch.max(filtered_predictions[..., 2:3])  # clamped between [-1, 1]
 
     cov_row1 = torch.cat((sd_x ** 2, rho * sd_x * sd_y), dim=2)
     cov_row2 = torch.cat((rho * sd_x * sd_y, sd_y ** 2), dim=2)
-    cov = torch.stack((cov_row1, cov_row2), dim=2)  # B*N x T x 2 x 2
+    cov = torch.stack((cov_row1, cov_row2), dim=2)  # B*N*T x 2 x 2
     nll_fn = nn.GaussianNLLLoss()
-    loss = nll_fn(predictions[:, :, 0:2], targets, torch.diagonal(cov))
+    loss = nll_fn(filtered_predictions[..., 0:2], filtered_targets, torch.diagonal(cov))
 
     return loss
 
