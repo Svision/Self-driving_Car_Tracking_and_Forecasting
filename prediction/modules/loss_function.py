@@ -33,6 +33,39 @@ def compute_l1_loss(targets: Tensor, predictions: Tensor) -> Tensor:
     return torch.mean(l1_loss)
 
 
+def compute_nll_loss(targets: Tensor, predictions: Tensor) -> Tensor:
+    """Compute the negative likelihood loss between `predictions` and `targets`.
+
+    Specifically, the l1-weighted MSE loss can be computed as follows:
+    1. filter out nan targets and corresponding predictions
+    2. generate the covariance matrix
+
+    Args:
+        targets: A [batch_size * num_actors x T x 2] tensor, containing the ground truth targets.
+        predictions: A [batch_size * num_actors x T x 5] tensor, containing the predictions.
+                    (mu_x, mu_y, rho, sd_x, sd_y)
+
+    Returns:
+        A scalar NLL loss between `predictions` and `targets`
+    """
+    print(targets.shape)
+    print(targets.isnan().shape)
+    print(torch.any(targets.isnan(), dim=).shape)
+    targets = targets[~torch.any(targets.isnan(), dim=1)]
+    predictions = predictions[~torch.any(targets.isnan(), dim=1)]
+    # generate cov matrix
+    sd_x = predictions[:, :, 3:4]
+    sd_y = predictions[:, :, 4:5]
+    rho = predictions[:, :, 2:3] / torch.max(predictions[:, :, 2:3])  # clamped between [-1, 1]
+
+    cov_row1 = torch.cat((sd_x ** 2, rho * sd_x * sd_y), dim=2)
+    cov_row2 = torch.cat((rho * sd_x * sd_y, sd_y ** 2), dim=2)
+    cov = torch.stack((cov_row1, cov_row2), dim=2)  # B*N x T x 2 x 2
+    nll_fn = nn.GaussianNLLLoss()
+    loss = nll_fn(predictions[:, :, 0:2], targets, torch.diagonal(cov))
+
+    return loss
+
 
 @dataclass
 class PredictionLossConfig:
@@ -43,6 +76,7 @@ class PredictionLossConfig:
     """
 
     l1_loss_weight: float
+    nll_loss_weight: float
 
 
 @dataclass
@@ -50,7 +84,8 @@ class PredictionLossMetadata:
     """Detailed breakdown of the Prediction loss."""
 
     total_loss: torch.Tensor
-    l1_loss: torch.Tensor
+    # l1_loss: torch.Tensor
+    nll_loss: torch.Tensor
 
 
 class PredictionLossFunction(torch.nn.Module):
@@ -59,6 +94,7 @@ class PredictionLossFunction(torch.nn.Module):
     def __init__(self, config: PredictionLossConfig) -> None:
         super(PredictionLossFunction, self).__init__()
         self._l1_loss_weight = config.l1_loss_weight
+        self._nll_loss_weight = config.nll_loss_weight
 
     def forward(
         self, predictions: List[Tensor], targets: List[Tensor]
@@ -79,16 +115,27 @@ class PredictionLossFunction(torch.nn.Module):
         # 1. Unpack the targets tensor.
         target_centroids = targets_tensor[..., :2]  # [batch_size * num_actors x T x 2]
 
+        # # 2. Unpack the predictions tensor.
+        # predicted_centroids = predictions_tensor[
+        #     ..., :2
+        # ]  # [batch_size * num_actors x T x 2]
+
+        # # 3. Compute individual loss terms for l1
+        # l1_loss = compute_l1_loss(target_centroids, predicted_centroids)
+        #
+        # # 4. Aggregate losses using the configured weights.
+        # total_loss = l1_loss * self._l1_loss_weight
+
         # 2. Unpack the predictions tensor.
         predicted_centroids = predictions_tensor[
-            ..., :2
-        ]  # [batch_size * num_actors x T x 2]
+                              ..., :5
+        ]  # [batch_size * num_actors x T x 5]
 
         # 3. Compute individual loss terms for l1
-        l1_loss = compute_l1_loss(target_centroids, predicted_centroids)
+        nll_loss = compute_nll_loss(target_centroids, predicted_centroids)
 
         # 4. Aggregate losses using the configured weights.
-        total_loss = l1_loss * self._l1_loss_weight
+        total_loss = nll_loss * self._nll_loss_weight
 
-        loss_metadata = PredictionLossMetadata(total_loss, l1_loss)
+        loss_metadata = PredictionLossMetadata(total_loss, nll_loss)
         return total_loss, loss_metadata

@@ -14,6 +14,7 @@ from prediction.metrics.evaluator import Evaluator
 from prediction.model import PredictionModel, PredictionModelConfig
 from prediction.modules.loss_function import PredictionLossFunction
 from prediction.utils.viz import vis_pred_labels
+from prediction.modules.probabilistic_model import ProbabilisticModel
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 
@@ -47,7 +48,7 @@ def overfit(
 
     # setup model
     model_config = PredictionModelConfig()
-    model = PredictionModel(model_config).to(device)
+    model = ProbabilisticModel(model_config).to(device)
 
     # setup data
     dataset = PandasetPredDataset(data_root, test=False)
@@ -130,7 +131,7 @@ def train(
 
     # setup model
     model_config = PredictionModelConfig()
-    model = PredictionModel(model_config)
+    model = ProbabilisticModel(model_config)
     if checkpoint_path is not None:
         model.load_state_dict(torch.load(checkpoint_path, map_location="cpu"))
     model = model.to(device)

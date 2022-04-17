@@ -8,7 +8,7 @@ from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-from detection.utils.visualization import plot_box
+from detection.utils.visualization import plot_box, plot_ellipse
 from prediction.types import Trajectories
 
 
@@ -47,7 +47,7 @@ def visualize_trajectories(
                 start_color[2] * (1 - ratio) + end_color[2] * ratio,
                 0.3,
             )
-            plot_box(
+            plot_ellipse(
                 ax,
                 centroids_x[ix, t].item(),
                 centroids_y[ix, t].item(),

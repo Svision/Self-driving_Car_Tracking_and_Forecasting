@@ -17,6 +17,7 @@ class PredictionModelConfig:
     loss: PredictionLossConfig = field(
         default_factory=lambda: PredictionLossConfig(
             l1_loss_weight=1.0,
+            nll_loss_weight=1.0,
         )
     )
     num_history_timesteps: int = 20  # Number of timesteps in the history
