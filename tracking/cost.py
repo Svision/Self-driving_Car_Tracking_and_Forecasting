@@ -70,24 +70,6 @@ def geometry_distance(bboxes1: np.ndarray, bboxes2: np.ndarray) -> np.ndarray:
     return (gd_mat / np.amax(gd_mat) + iou_mat / np.amax(iou_mat)) / 2
 
 
-def motion_feature(bboxes1: np.ndarray, bboxes2: np.ndarray) -> np.ndarray:
-    """Computes motion feature of two sets of bounding boxes
-
-    Args:
-        bboxes1: bounding box set of shape [M, 5], each row corresponding to x, y, l, w, yaw of the bounding box
-        bboxes2: bounding box set of shape [N, 5], each row corresponding to x, y, l, w, yaw of the bounding box
-    Returns:
-        mf_mat: matrix of shape [M, N], where mf_mat[i, j] is the velocity difference between bboxes[i] and bboxes[j].
-    """
-    M, N = bboxes1.shape[0], bboxes2.shape[0]
-    mf_mat = np.zeros((M, N))
-    for i in range(M):
-        for j in range(N):
-            # mf_mat[i, j] = FILL IN
-            pass
-    return mf_mat / np.amax(mf_mat)
-
-
 # if __name__ == '__main__':
 #     import matplotlib.pyplot as plt
 #     bboxes_a = np.array([[0.0, 0.0, 2.0, 1.0, 0.0], [0.0, 0.0, 2.0, 1.0, np.pi / 2]])

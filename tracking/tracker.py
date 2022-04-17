@@ -61,8 +61,6 @@ class Tracker:
         cost_matrix = torch.ones((M, N)) - iou_2d(bboxes1.numpy(), bboxes2.numpy())
         # Improved Cost Function 1: geometry_distance
         # cost_matrix = torch.ones((M, N)) - geometry_distance(bboxes1.numpy(), bboxes2.numpy())
-        # Improved Cost Function 2: motion_feature
-        # cost_matrix = torch.ones((M, N)) - motion_feature(bboxes1.numpy(), bboxes2.numpy())
         return cost_matrix
 
     def associate_greedy(
@@ -164,6 +162,18 @@ class Tracker:
             if scores_seq is not None:
                 prev_bboxes = prev_bboxes[scores_seq[frame_id - 1] >= self.min_score]
                 cur_bboxes = cur_bboxes[scores_seq[frame_id] >= self.min_score]
+            # Motion Feature Begin
+            for idx, track_id in enumerate(cur_frame_track_ids):
+                tracklet = self.tracks[track_id]  # get tracket to calculate velocity
+                if len(tracklet.bboxes_traj) < 2:  # could not calculate velocity
+                    continue
+                else:
+                    second_last_traj = tracklet.bboxes_traj[-2]
+                    last_traj = tracklet.bboxes_traj[-1]
+                    prev_bboxes[idx][0] += last_traj[0] - second_last_traj[0]  # x + delta x
+                    prev_bboxes[idx][1] += last_traj[1] - second_last_traj[1]  # y + delta y
+            # Motion Feature End
+
             assign_matrix, cost_matrix = self.track_consecutive_frame(
                 prev_bboxes, cur_bboxes
             )
