@@ -53,14 +53,15 @@ def greedy_matching(cost_matrix: np.ndarray) -> Tuple[List, List]:
     # DONE: Replace this stub code.
     M, N = cost_matrix.shape
     row_ids, col_ids = [], []
-    min_total_cost = float('inf')
+    # https://stackoverflow.com/questions/30577375/have-numpy-argsort-return-an-array-of-2d-indices
+    mins = np.dstack(np.unravel_index(np.argsort(cost_matrix.ravel()), (M, N)))[0]
 
-    curr_row_ids, curr_col_ids = [i for i in range(M)], [j for j in range(N)]
-    for i in range(min(M, N)):
-        curr_total_cost, curr_row_ids, curr_col_ids = greedy_cost(cost_matrix, curr_row_ids, curr_col_ids)
-        if curr_total_cost < min_total_cost:
-            min_total_cost = curr_total_cost
-            row_ids, col_ids = curr_row_ids, curr_col_ids
+    for i in range(mins.shape[0]):
+        if len(row_ids) < min(M, N):
+            row_id, col_id = mins[i]
+            if row_id not in row_ids and col_id not in col_ids:
+                row_ids.append(row_id)
+                col_ids.append(col_id)
     return row_ids, col_ids
 
 
