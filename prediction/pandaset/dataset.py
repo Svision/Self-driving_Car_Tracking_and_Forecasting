@@ -35,7 +35,7 @@ class PandasetPredConfig:
     basepath: str
     sequence_ids: Optional[Sequence[int]] = None
     classes_to_keep: Optional[Sequence[LabelClass]] = (LabelClass.CAR,)
-    num_pred_history_sweeps: int = 20
+    num_pred_history_sweeps: int = 10
     stride_pred_history_sweeps: int = 1
     num_pred_label_sweeps: int = 50
     stride_pred_label_sweeps: int = 5

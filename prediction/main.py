@@ -23,7 +23,7 @@ def overfit(
     data_root: str,
     output_root: str,
     seed: int = 42,
-    num_iterations: int = 500,
+    num_iterations: int = 1000,
     log_frequency: int = 100,
     learning_rate: float = 1e-2,
 ) -> None:
@@ -71,7 +71,7 @@ def overfit(
         optimizer.step()
 
         losses_buffer["Loss"].append(loss.item())
-        losses_buffer["L1 Loss"].append(loss_metadata.l1_loss.item())
+        losses_buffer["NLL Loss"].append(loss_metadata.nll_loss.item())
         # inference on the training example, and save vis results
         if (idx + 1) % log_frequency == 0:
             print(
@@ -90,7 +90,7 @@ def overfit(
                 predictions = model.inference(history_tensors[0].to(device)).to("cpu")
             # We copy over the ground truth yaw and boxes for simplicity
             predictions.yaws = labels[0].yaws
-            predictions.boxes = labels[0].boxes
+            # predictions.boxes = labels[0].boxes
             vis_pred_labels(predictions, labels[0])
             plt.savefig(f"{output_root}/predictions.png")
             plt.close("all")
@@ -102,7 +102,7 @@ def train(
     seed: int = 42,
     batch_size: int = 32,
     num_workers: int = 8,
-    num_epochs: int = 50,
+    num_epochs: int = 25,
     log_frequency: int = int(269 // 16),
     learning_rate: float = 1e-4,
     checkpoint_path: Optional[str] = None,
@@ -227,7 +227,7 @@ def train(
                     )
                 # We copy over the ground truth yaw and boxes for simplicity
                 predictions.yaws = labels[0].yaws
-                predictions.boxes = labels[0].boxes
+                # predictions.boxes = labels[0].boxes
                 vis_pred_labels(predictions, labels[0])
                 plt.savefig(f"{output_root}/predictions.png")
                 plt.close("all")
