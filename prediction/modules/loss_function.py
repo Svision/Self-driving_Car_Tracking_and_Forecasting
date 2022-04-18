@@ -59,7 +59,7 @@ def compute_nll_loss(targets: Tensor, predictions: Tensor) -> Tensor:
     cov_row2 = torch.cat((rho * sd_x * sd_y, sd_y ** 2), dim=2)
     cov = torch.stack((cov_row1, cov_row2), dim=2)  # B*N x T x 2 x 2
     var = torch.linalg.det(cov).clamp(min=0)
-    nll_fn = nn.GaussianNLLLoss(reduction='sum')
+    nll_fn = nn.GaussianNLLLoss(reduction='mean')
     loss = nll_fn(predictions[..., 0:2], filtered_targets, var)
 
     return loss

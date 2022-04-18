@@ -10,7 +10,12 @@ def compute_ADE(centroids: torch.Tensor, labels: torch.Tensor) -> float:
         labels: N x T x 2 tensor of actual gt centroids
     """
     valid = ~torch.isnan(labels).any(-1)
-    return (torch.norm(centroids - labels, dim=-1)[valid]).mean().item()
+    # print(centroids[:, 0:10, :].shape)
+    # print(labels.shape)
+    # print(torch.norm(centroids[:, 0:10, :] - labels, dim=-1).shape)
+    # print(valid.shape)
+    # print(torch.norm(centroids[:, 0:10, :] - labels, dim=-1)[valid].shape)
+    return (torch.norm(centroids[:, 0:10, :] - labels, dim=-1)[valid]).mean().item()
 
 
 def compute_FDE(centroids: torch.Tensor, labels: torch.Tensor) -> float:
@@ -36,4 +41,6 @@ def compute_per_frame_err(
         labels: N x T x 2 tensor of actual gt centroids
     """
     valid = ~torch.isnan(labels).any(-1).any(-1)
-    return (torch.norm(centroids - labels, dim=-1)[valid]).mean(0)
+    print(centroids[:, 0:10, :].shape)
+    print(labels.shape)
+    return (torch.norm(centroids[:, 0:10, :] - labels, dim=-1)[valid]).mean(0)

@@ -102,7 +102,7 @@ def train(
     seed: int = 42,
     batch_size: int = 32,
     num_workers: int = 8,
-    num_epochs: int = 25,
+    num_epochs: int = 50,
     log_frequency: int = int(269 // 16),
     learning_rate: float = 1e-4,
     checkpoint_path: Optional[str] = None,
@@ -204,7 +204,7 @@ def train(
             step += 1
 
             losses_buffer["Loss"].append(loss.item())
-            losses_buffer["L1 Loss"].append(loss_metadata.l1_loss.item())
+            losses_buffer["NLL Loss"].append(loss_metadata.nll_loss.item())
             # inference on the training example, and save vis results
             if (idx + 1) % log_frequency == 0:
                 print(

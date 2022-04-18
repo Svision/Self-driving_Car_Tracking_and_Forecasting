@@ -43,7 +43,7 @@ class PredictionModel(nn.Module):
 
         # TODO: Implement
         self._decoder = nn.Sequential(
-            nn.Linear(128, config.num_label_timesteps * 2),
+            nn.Linear(128, config.num_label_timesteps * 5),
         )
 
     @staticmethod

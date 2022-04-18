@@ -25,7 +25,9 @@ class ProbabilisticDecoder(nn.Module):
 class ProbabilisticModel(PredictionModel):
     def __init__(self, config: PredictionModelConfig) -> None:
         super().__init__(config)
-        self._decoder = ProbabilisticDecoder(config)
+        # self._decoder = nn.Sequential(
+        #     nn.Linear(128, config.num_label_timesteps * 5),
+        # )
 
     @staticmethod
     def _postprocess(
