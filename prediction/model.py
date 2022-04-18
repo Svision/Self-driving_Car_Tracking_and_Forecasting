@@ -20,7 +20,7 @@ class PredictionModelConfig:
             nll_loss_weight=1.0,
         )
     )
-    num_history_timesteps: int = 10  # Number of timesteps in the history
+    num_history_timesteps: int = 20  # Number of timesteps in the history
     num_label_timesteps: int = 10  # Number of timesteps to predict
     num_features_per_timestep: int = 2  # Number of features input to the encoder
 

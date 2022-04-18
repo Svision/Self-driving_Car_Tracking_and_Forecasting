@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from tracking.cost import iou_2d
+from tracking.cost import iou_2d, geometry_distance
 from tracking.matching import greedy_matching, hungarian_matching
 from tracking.types import ActorID, AssociateMethod, SingleTracklet
 
@@ -55,10 +55,12 @@ class Tracker:
         Returns:
             cost_matrix: cost matrix of shape [M, N]
         """
-        # TODO: Replace this stub code by making use of iou_2d
+        # DONE: Replace this stub code by making use of iou_2d
         M, N = bboxes1.shape[0], bboxes2.shape[0]
-        cost_matrix = torch.ones((M, N))
-        cost_matrix -= iou_2d(bboxes1.numpy(), bboxes2.numpy())
+        # Original Cost Function: IoU
+        cost_matrix = torch.ones((M, N)) - iou_2d(bboxes1.numpy(), bboxes2.numpy())
+        # Improved Cost Function 1: geometry_distance
+        # cost_matrix = torch.ones((M, N)) - geometry_distance(bboxes1.numpy(), bboxes2.numpy())
         return cost_matrix
 
     def associate_greedy(
@@ -74,10 +76,12 @@ class Tracker:
             and j-th box in bboxes2 are associated.
             cost_matrix: cost matrix of shape [M, N]
         """
-        # TODO: Replace this stub code by invoking self.cost_matrix and greedy_matching
+        # DONE: Replace this stub code by invoking self.cost_matrix and greedy_matching
         M, N = bboxes1.shape[0], bboxes2.shape[0]
-        cost_matrix = torch.ones((M, N))
+        cost_matrix = self.cost_matrix(bboxes1, bboxes2)
         assign_matrix = torch.zeros((M, N))
+        row_ids, col_ids = greedy_matching(cost_matrix.numpy())
+        assign_matrix[row_ids, col_ids] = 1
 
         return assign_matrix, cost_matrix
 
@@ -94,10 +98,12 @@ class Tracker:
             and j-th box in bboxes2 are associated.
             cost_matrix: cost matrix of shape [M, N]
         """
-        # TODO: Replace this stub code by invoking self.cost_matrix and hungarian_matching
+        # DONE: Replace this stub code by invoking self.cost_matrix and hungarian_matching
         M, N = bboxes1.shape[0], bboxes2.shape[0]
-        cost_matrix = torch.ones((M, N))
+        cost_matrix = self.cost_matrix(bboxes1, bboxes2)
         assign_matrix = torch.zeros((M, N))
+        row_ids, col_ids = hungarian_matching(cost_matrix.numpy())
+        assign_matrix[row_ids, col_ids] = 1
 
         return assign_matrix, cost_matrix
 
@@ -125,7 +131,9 @@ class Tracker:
         else:
             raise ValueError(f"Unknown association method {self.associate_method}")
 
-        # TODO: Filter out matches with costs >= self.match_th
+        # DONE: Filter out matches with costs >= self.match_th
+        mask = (cost_matrix < self.match_th).long()
+        assign_matrix = assign_matrix * mask
 
         return assign_matrix, cost_matrix
 
@@ -154,6 +162,18 @@ class Tracker:
             if scores_seq is not None:
                 prev_bboxes = prev_bboxes[scores_seq[frame_id - 1] >= self.min_score]
                 cur_bboxes = cur_bboxes[scores_seq[frame_id] >= self.min_score]
+            # Motion Feature Begin
+            for idx, track_id in enumerate(cur_frame_track_ids):
+                tracklet = self.tracks[track_id]  # get tracket to calculate velocity
+                if len(tracklet.bboxes_traj) < 2:  # could not calculate velocity
+                    continue
+                else:
+                    second_last_traj = tracklet.bboxes_traj[-2]
+                    last_traj = tracklet.bboxes_traj[-1]
+                    prev_bboxes[idx][0] += last_traj[0] - second_last_traj[0]  # x + delta x
+                    prev_bboxes[idx][1] += last_traj[1] - second_last_traj[1]  # y + delta y
+            # Motion Feature End
+
             assign_matrix, cost_matrix = self.track_consecutive_frame(
                 prev_bboxes, cur_bboxes
             )

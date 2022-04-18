@@ -32,7 +32,7 @@ def compute_l1_loss(targets: Tensor, predictions: Tensor) -> Tensor:
     l1_loss = abs(filtered_targets - filtered_predictions)
     return torch.mean(l1_loss)
 
-
+  
 def compute_nll_loss(targets: Tensor, predictions: Tensor) -> Tensor:
     """Compute the negative likelihood loss between `predictions` and `targets`.
 
