@@ -102,7 +102,7 @@ def train(
     seed: int = 42,
     batch_size: int = 32,
     num_workers: int = 8,
-    num_epochs: int = 50,
+    num_epochs: int = 25,
     log_frequency: int = int(269 // 16),
     learning_rate: float = 1e-4,
     checkpoint_path: Optional[str] = None,

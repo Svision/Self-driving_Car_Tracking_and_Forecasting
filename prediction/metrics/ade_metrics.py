@@ -41,6 +41,4 @@ def compute_per_frame_err(
         labels: N x T x 2 tensor of actual gt centroids
     """
     valid = ~torch.isnan(labels).any(-1).any(-1)
-    print(centroids[:, 0:10, :].shape)
-    print(labels.shape)
     return (torch.norm(centroids[:, 0:10, :] - labels, dim=-1)[valid]).mean(0)
